@@ -2,28 +2,29 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
   <title>Saba & Moaaz — Shendi / Baarat</title>
 
-  <!-- Tailwind CSS -->
   <script src="https://cdn.tailwindcss.com"></script>
 
-  <!-- React & React DOM -->
   <script crossorigin src="https://unpkg.com/react@18/umd/react.development.js"></script>
   <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
 
-  <!-- Babel Compiler for JSX -->
   <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
 
-  <!-- Framer Motion -->
   <script src="https://unpkg.com/framer-motion@10.16.4/dist/framer-motion.js"></script>
 
-  <!-- Lucide Icons -->
   <script src="https://unpkg.com/lucide@latest"></script>
 
   <style>
-    @import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;1,400&family=Montserrat:wght@300;400&display=swap');
-    
+    @import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;1,400&family=Montserrat:wght@300;400&display=swap');
+
+    html, body {
+      height: 100%;
+      width: 100%;
+      overflow: hidden;
+    }
+
     body {
       font-family: 'Cormorant Garamond', serif;
       background-color: #f6f2eb;
@@ -49,7 +50,7 @@
       eventTitle: "Shendi / Baarat",
       displayDate: "Sunday, 4 October 2026",
       displayTime: "5:00 PM",
-      venue: "Crest Hollow Country Club",
+      venue: "Crest Hollow Country Club — Plaza Hall",
       location: "Long Island, New York",
       mapUrl: "https://maps.app.goo.gl/vdraTwKgFppFPMrR9",
       assets: {
@@ -63,7 +64,7 @@
       const [isOpen, setIsOpen] = useState(false);
       const [isPlaying, setIsPlaying] = useState(false);
       const [copied, setCopied] = useState(false);
-      const audioRef = useRef(null);
+      audioRef = useRef(null);
 
       useEffect(() => {
         if (audioRef.current) {
@@ -77,7 +78,7 @@
           audioRef.current.play().then(() => {
             setIsPlaying(true);
           }).catch((err) => {
-            console.log("Audio playback deferred to direct user action:", err);
+            console.log("Audio deferred:", err);
           });
         }
       };
@@ -130,7 +131,7 @@
           try {
             await navigator.share(shareData);
           } catch (err) {
-            console.log("Share action dismissed", err);
+            console.log("Share dismissed", err);
           }
         } else {
           try {
@@ -138,91 +139,81 @@
             setCopied(true);
             setTimeout(() => setCopied(false), 2500);
           } catch (err) {
-            console.error("Clipboard write failed", err);
+            console.error("Clipboard failed", err);
           }
         }
       };
 
       return (
-        <div className="relative min-h-screen w-full bg-[#f6f2eb] text-[#5a4d41] overflow-x-hidden flex flex-col items-center justify-between select-none">
+        <div className="relative h-screen w-full bg-[#f6f2eb] text-[#5a4d41] overflow-hidden flex flex-col items-center justify-between p-3 select-none">
           <audio ref={audioRef} src={INVITATION_CONFIG.assets.music} loop preload="auto" />
 
-          <main className="relative w-full max-w-xl min-h-screen flex flex-col items-center justify-center p-4 py-8">
+          <main className="relative w-full max-w-lg h-full flex flex-col items-center justify-between my-auto py-1">
             <AnimatePresence mode="wait">
               {!isOpen ? (
+                /* ENVELOPE VIEW */
                 <motion.div
                   key="envelope-screen"
                   initial={{ opacity: 0, scale: 0.98 }}
                   animate={{ opacity: 1, scale: 1 }}
-                  exit={{ opacity: 0, scale: 1.03, transition: { duration: 1.2, ease: [0.4, 0, 0.2, 1] } }}
-                  className="relative flex flex-col items-center justify-center w-full cursor-pointer"
+                  exit={{ opacity: 0, scale: 1.03, transition: { duration: 1.0, ease: [0.4, 0, 0.2, 1] } }}
+                  className="relative flex flex-col items-center justify-center w-full h-full cursor-pointer"
                   onClick={handleOpen}
                 >
-                  <div className="relative w-full max-w-md aspect-[4/5] rounded-lg shadow-2xl overflow-hidden bg-[#eae3d5] border border-[#e2d8c3]/60 transition-transform duration-500 hover:scale-[1.01]">
+                  <div className="relative w-full max-h-[90vh] shadow-2xl rounded-lg overflow-hidden border border-[#e2d8c3]/60 transition-transform duration-300 active:scale-[0.99]">
                     <img
                       src={INVITATION_CONFIG.assets.envelope}
-                      alt="Sealed Envelope"
-                      className="w-full h-full object-cover object-left"
+                      alt="Sealed Envelope — Tap to Open"
+                      className="w-full h-auto max-h-[90vh] object-contain block"
                     />
                   </div>
-
-                  <motion.div 
-                    initial={{ opacity: 0, y: 10 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ delay: 0.4 }}
-                    className="mt-8 text-center"
-                  >
-                    <span className="block text-xl tracking-[0.3em] font-light text-[#7a6a58] uppercase">
-                      Open
-                    </span>
-                    <span className="block text-xs tracking-[0.15em] font-sans-custom text-[#a39380] uppercase mt-1">
-                      Tap to open
-                    </span>
-                  </motion.div>
                 </motion.div>
               ) : (
+                /* INVITATION VIEW — EXPANDED WIDTH */
                 <motion.div
                   key="invitation-screen"
-                  initial={{ opacity: 0, y: 40, scale: 0.95, filter: "blur(4px)" }}
+                  initial={{ opacity: 0, y: 30, scale: 0.95, filter: "blur(4px)" }}
                   animate={{ opacity: 1, y: 0, scale: 1, filter: "blur(0px)" }}
-                  transition={{ duration: 1.8, ease: [0.16, 1, 0.3, 1] }}
-                  className="relative w-full flex flex-col items-center my-auto"
+                  transition={{ duration: 1.4, ease: [0.16, 1, 0.3, 1] }}
+                  className="relative w-full h-full flex flex-col items-center justify-between py-1"
                 >
-                  <div className="relative w-full max-w-md shadow-2xl rounded-sm overflow-hidden border border-[#e8dfce]">
+                  {/* Maximized & Wider Card Area */}
+                  <div className="relative w-full flex-1 min-h-0 flex items-center justify-center px-1">
                     <img
                       src={INVITATION_CONFIG.assets.invitation}
                       alt={`${INVITATION_CONFIG.coupleName} Wedding Invitation`}
-                      className="w-full h-auto object-contain block"
+                      className="w-full h-full object-contain rounded-sm shadow-2xl border border-[#e8dfce] block"
                     />
                   </div>
 
+                  {/* Compact Bottom Action Bar */}
                   <motion.div
-                    initial={{ opacity: 0, y: 20 }}
+                    initial={{ opacity: 0, y: 10 }}
                     animate={{ opacity: 1, y: 0 }}
-                    transition={{ delay: 1.4, duration: 1.0 }}
-                    className="w-full max-w-md mt-10 mb-6 flex items-center justify-around px-2 text-xs tracking-[0.2em] font-sans-custom text-[#6e5e4d] uppercase border-t border-[#e2d6c3] pt-6"
+                    transition={{ delay: 0.8, duration: 0.8 }}
+                    className="w-full flex items-center justify-around px-2 text-[11px] tracking-[0.16em] font-sans-custom text-[#6e5e4d] uppercase border-t border-[#e2d6c3] pt-2.5 mt-1 shrink-0"
                   >
                     <a
                       href={INVITATION_CONFIG.mapUrl}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="flex items-center gap-1.5 transition-colors duration-300 hover:text-[#2b231a] p-2"
+                      className="flex items-center gap-1 transition-colors hover:text-[#2b231a] py-0.5"
                     >
                       <i data-lucide="map-pin" className="w-3.5 h-3.5"></i>
-                      <span>View Location</span>
+                      <span>Location</span>
                     </a>
 
                     <button
                       onClick={handleAddToCalendar}
-                      className="flex items-center gap-1.5 transition-colors duration-300 hover:text-[#2b231a] p-2"
+                      className="flex items-center gap-1 transition-colors hover:text-[#2b231a] py-0.5"
                     >
                       <i data-lucide="calendar" className="w-3.5 h-3.5"></i>
-                      <span>Add to Calendar</span>
+                      <span>Calendar</span>
                     </button>
 
                     <button
                       onClick={handleShare}
-                      className="flex items-center gap-1.5 transition-colors duration-300 hover:text-[#2b231a] p-2 relative"
+                      className="flex items-center gap-1 transition-colors hover:text-[#2b231a] py-0.5"
                     >
                       {copied ? (
                         <>
@@ -242,14 +233,15 @@
             </AnimatePresence>
           </main>
 
+          {/* Floating Audio Button */}
           {isOpen && (
             <motion.button
               initial={{ opacity: 0, scale: 0.8 }}
               animate={{ opacity: 1, scale: 1 }}
-              transition={{ delay: 1.0, duration: 0.6 }}
+              transition={{ delay: 0.8, duration: 0.5 }}
               onClick={toggleMusic}
               aria-label="Toggle Background Music"
-              className="fixed bottom-6 right-6 z-50 p-3 rounded-full bg-[#f6f2eb]/90 border border-[#dcd0bc] text-[#5a4d41] shadow-md backdrop-blur-md transition-all duration-300 hover:scale-105 active:scale-95"
+              className="fixed bottom-3 right-3 z-50 p-2.5 rounded-full bg-[#f6f2eb]/90 border border-[#dcd0bc] text-[#5a4d41] shadow-md backdrop-blur-md transition-all active:scale-95"
             >
               <i data-lucide={isPlaying ? "volume-2" : "volume-x"} className="w-4 h-4"></i>
             </motion.button>
