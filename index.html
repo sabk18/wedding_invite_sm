@@ -1,0 +1,269 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Saba & Moaaz — Shendi / Baarat</title>
+
+  <!-- Tailwind CSS -->
+  <script src="https://cdn.tailwindcss.com"></script>
+
+  <!-- React & React DOM -->
+  <script crossorigin src="https://unpkg.com/react@18/umd/react.development.js"></script>
+  <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
+
+  <!-- Babel Compiler for JSX -->
+  <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+
+  <!-- Framer Motion -->
+  <script src="https://unpkg.com/framer-motion@10.16.4/dist/framer-motion.js"></script>
+
+  <!-- Lucide Icons -->
+  <script src="https://unpkg.com/lucide@latest"></script>
+
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;1,400&family=Montserrat:wght@300;400&display=swap');
+    
+    body {
+      font-family: 'Cormorant Garamond', serif;
+      background-color: #f6f2eb;
+      color: #5a4d41;
+      margin: 0;
+      padding: 0;
+      -webkit-tap-highlight-color: transparent;
+    }
+    .font-sans-custom {
+      font-family: 'Montserrat', sans-serif;
+    }
+  </style>
+</head>
+<body>
+  <div id="root"></div>
+
+  <script type="text/babel">
+    const { useState, useRef, useEffect } = React;
+    const { motion, AnimatePresence } = window.Motion;
+
+    const INVITATION_CONFIG = {
+      coupleName: "Saba & Moaaz",
+      eventTitle: "Shendi / Baarat",
+      displayDate: "Sunday, 4 October 2026",
+      displayTime: "5:00 PM",
+      venue: "Crest Hollow Country Club",
+      location: "Long Island, New York",
+      mapUrl: "https://maps.app.goo.gl/vdraTwKgFppFPMrR9",
+      assets: {
+        envelope: "public/images/envelope.png",
+        invitation: "public/images/invitation.png",
+        music: "public/music/wedding.mp3"
+      }
+    };
+
+    function WeddingInvitationApp() {
+      const [isOpen, setIsOpen] = useState(false);
+      const [isPlaying, setIsPlaying] = useState(false);
+      const [copied, setCopied] = useState(false);
+      const audioRef = useRef(null);
+
+      useEffect(() => {
+        if (audioRef.current) {
+          audioRef.current.volume = 0.35;
+        }
+      }, []);
+
+      const handleOpen = () => {
+        setIsOpen(true);
+        if (audioRef.current) {
+          audioRef.current.play().then(() => {
+            setIsPlaying(true);
+          }).catch((err) => {
+            console.log("Audio playback deferred to direct user action:", err);
+          });
+        }
+      };
+
+      const toggleMusic = () => {
+        if (!audioRef.current) return;
+        if (isPlaying) {
+          audioRef.current.pause();
+          setIsPlaying(false);
+        } else {
+          audioRef.current.play().then(() => {
+            setIsPlaying(true);
+          }).catch(console.error);
+        }
+      };
+
+      const handleAddToCalendar = () => {
+        const icsData = [
+          "BEGIN:VCALENDAR",
+          "VERSION:2.0",
+          "PRODID:-//Saba and Moaaz Wedding//EN",
+          "BEGIN:VEVENT",
+          `SUMMARY:${INVITATION_CONFIG.coupleName} — ${INVITATION_CONFIG.eventTitle}`,
+          `DESCRIPTION:Join us to celebrate the ${INVITATION_CONFIG.eventTitle} of ${INVITATION_CONFIG.coupleName}.`,
+          `LOCATION:${INVITATION_CONFIG.venue}, ${INVITATION_CONFIG.location}`,
+          "DTSTART:20261004T210000Z",
+          "DTEND:20261005T020000Z",
+          "END:VEVENT",
+          "END:VCALENDAR"
+        ].join("\r\n");
+
+        const blob = new Blob([icsData], { type: 'text/calendar;charset=utf-8' });
+        const url = window.URL.createObjectURL(blob);
+        const link = document.createElement('a');
+        link.href = url;
+        link.setAttribute('download', 'Saba_Moaaz_Wedding.ics');
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+      };
+
+      const handleShare = async () => {
+        const shareData = {
+          title: `${INVITATION_CONFIG.coupleName} — Wedding Invitation`,
+          text: `You are invited to the ${INVITATION_CONFIG.eventTitle} of ${INVITATION_CONFIG.coupleName}.`,
+          url: window.location.href,
+        };
+
+        if (navigator.share) {
+          try {
+            await navigator.share(shareData);
+          } catch (err) {
+            console.log("Share action dismissed", err);
+          }
+        } else {
+          try {
+            await navigator.clipboard.writeText(window.location.href);
+            setCopied(true);
+            setTimeout(() => setCopied(false), 2500);
+          } catch (err) {
+            console.error("Clipboard write failed", err);
+          }
+        }
+      };
+
+      return (
+        <div className="relative min-h-screen w-full bg-[#f6f2eb] text-[#5a4d41] overflow-x-hidden flex flex-col items-center justify-between select-none">
+          <audio ref={audioRef} src={INVITATION_CONFIG.assets.music} loop preload="auto" />
+
+          <main className="relative w-full max-w-xl min-h-screen flex flex-col items-center justify-center p-4 py-8">
+            <AnimatePresence mode="wait">
+              {!isOpen ? (
+                <motion.div
+                  key="envelope-screen"
+                  initial={{ opacity: 0, scale: 0.98 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  exit={{ opacity: 0, scale: 1.03, transition: { duration: 1.2, ease: [0.4, 0, 0.2, 1] } }}
+                  className="relative flex flex-col items-center justify-center w-full cursor-pointer"
+                  onClick={handleOpen}
+                >
+                  <div className="relative w-full max-w-md aspect-[4/5] rounded-lg shadow-2xl overflow-hidden bg-[#eae3d5] border border-[#e2d8c3]/60 transition-transform duration-500 hover:scale-[1.01]">
+                    <img
+                      src={INVITATION_CONFIG.assets.envelope}
+                      alt="Sealed Envelope"
+                      className="w-full h-full object-cover object-left"
+                    />
+                  </div>
+
+                  <motion.div 
+                    initial={{ opacity: 0, y: 10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: 0.4 }}
+                    className="mt-8 text-center"
+                  >
+                    <span className="block text-xl tracking-[0.3em] font-light text-[#7a6a58] uppercase">
+                      Open
+                    </span>
+                    <span className="block text-xs tracking-[0.15em] font-sans-custom text-[#a39380] uppercase mt-1">
+                      Tap to open
+                    </span>
+                  </motion.div>
+                </motion.div>
+              ) : (
+                <motion.div
+                  key="invitation-screen"
+                  initial={{ opacity: 0, y: 40, scale: 0.95, filter: "blur(4px)" }}
+                  animate={{ opacity: 1, y: 0, scale: 1, filter: "blur(0px)" }}
+                  transition={{ duration: 1.8, ease: [0.16, 1, 0.3, 1] }}
+                  className="relative w-full flex flex-col items-center my-auto"
+                >
+                  <div className="relative w-full max-w-md shadow-2xl rounded-sm overflow-hidden border border-[#e8dfce]">
+                    <img
+                      src={INVITATION_CONFIG.assets.invitation}
+                      alt={`${INVITATION_CONFIG.coupleName} Wedding Invitation`}
+                      className="w-full h-auto object-contain block"
+                    />
+                  </div>
+
+                  <motion.div
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: 1.4, duration: 1.0 }}
+                    className="w-full max-w-md mt-10 mb-6 flex items-center justify-around px-2 text-xs tracking-[0.2em] font-sans-custom text-[#6e5e4d] uppercase border-t border-[#e2d6c3] pt-6"
+                  >
+                    <a
+                      href={INVITATION_CONFIG.mapUrl}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="flex items-center gap-1.5 transition-colors duration-300 hover:text-[#2b231a] p-2"
+                    >
+                      <i data-lucide="map-pin" className="w-3.5 h-3.5"></i>
+                      <span>View Location</span>
+                    </a>
+
+                    <button
+                      onClick={handleAddToCalendar}
+                      className="flex items-center gap-1.5 transition-colors duration-300 hover:text-[#2b231a] p-2"
+                    >
+                      <i data-lucide="calendar" className="w-3.5 h-3.5"></i>
+                      <span>Add to Calendar</span>
+                    </button>
+
+                    <button
+                      onClick={handleShare}
+                      className="flex items-center gap-1.5 transition-colors duration-300 hover:text-[#2b231a] p-2 relative"
+                    >
+                      {copied ? (
+                        <>
+                          <i data-lucide="check" className="w-3.5 h-3.5 text-emerald-700"></i>
+                          <span className="text-emerald-700">Copied</span>
+                        </>
+                      ) : (
+                        <>
+                          <i data-lucide="share-2" className="w-3.5 h-3.5"></i>
+                          <span>Share</span>
+                        </>
+                      )}
+                    </button>
+                  </motion.div>
+                </motion.div>
+              )}
+            </AnimatePresence>
+          </main>
+
+          {isOpen && (
+            <motion.button
+              initial={{ opacity: 0, scale: 0.8 }}
+              animate={{ opacity: 1, scale: 1 }}
+              transition={{ delay: 1.0, duration: 0.6 }}
+              onClick={toggleMusic}
+              aria-label="Toggle Background Music"
+              className="fixed bottom-6 right-6 z-50 p-3 rounded-full bg-[#f6f2eb]/90 border border-[#dcd0bc] text-[#5a4d41] shadow-md backdrop-blur-md transition-all duration-300 hover:scale-105 active:scale-95"
+            >
+              <i data-lucide={isPlaying ? "volume-2" : "volume-x"} className="w-4 h-4"></i>
+            </motion.button>
+          )}
+        </div>
+      );
+    }
+
+    const root = ReactDOM.createRoot(document.getElementById('root'));
+    root.render(<WeddingInvitationApp />);
+
+    setTimeout(() => {
+      if (window.lucide) window.lucide.createIcons();
+    }, 100);
+  </script>
+</body>
+</html>
